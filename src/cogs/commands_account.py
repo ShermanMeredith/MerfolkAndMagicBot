@@ -116,18 +116,15 @@ class AccountCog(commands.Cog, name="Login Cog"):
         await interaction.response.send_message(embed=logout_embed, ephemeral=True)
 
     #----------------------------------------------------------------------------------------------
-    # COMMAND: /login + file - Doesn't work yet
+    # COMMAND: /login + file
     #----------------------------------------------------------------------------------------------
-    #@group_account.command(name='login', description="Log in to your account")
-    #@app_commands.describe(recovery_phrase_file=SEEDPHRASE_FILE_DESCRIPTION)
-    #async def login(self, interaction: Interaction, recovery_phrase_file: Attachment):
-        #print(f"Received Account Login Command from {interaction.user.display_name}")
+    @group_account.command(name='login', description="Log in to your account")
+    @app_commands.describe(recovery_phrase_file=SEEDPHRASE_FILE_DESCRIPTION)
+    async def login(self, interaction: Interaction, recovery_phrase_file: Attachment):
+        print(f"Received Account Login Command from {interaction.user.display_name}")
 
-        #seedphrase_file = await recovery_phrase_file.to_file()
-        #with open(seedphrase_file) as f:
-            #seedphrase = f.read()
-
-        #await self.process_seedphrase(seedphrase)
+        seedphrase = StringIO((await recovery_phrase_file.read()).decode('utf-8')).read()
+        await self.process_seedphrase(interaction, seedphrase)
 
     #----------------------------------------------------------------------------------------------
     # COMMAND: /login + seedphrase
