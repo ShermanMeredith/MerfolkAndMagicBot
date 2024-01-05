@@ -1,21 +1,11 @@
-# builtin modules
 from os import environ
 from io import StringIO
-
-# installed modules
-from discord import app_commands, Embed, Attachment, File, Interaction
-from discord.ext import commands
+import discord
 from eth_account.signers.local import LocalAccount
 from eth_account import Account
 from eth_keys.exceptions import ValidationError
-
-# local modules
 from utils.accounts import user_accounts
 
-# Config Variables
-ACCOUNT_GROUP_DESCRIPTION = "Commands related to user accounts"
-LOGIN_WITH_PHRASE_DESCRIPTION = "Log in to your account using your recovery phrase"
-SEEDPHRASE_FILE_DESCRIPTION = "The file containing your seedphrase. This was created when you signed up."
 SIGNUP_MESSAGE = """Your new account has been created, and you are now logged in!
 
 When you are ready to continue, type /start to start your adventure!
@@ -31,48 +21,39 @@ Never share this recovery phrase with anyone else.
 Our team members will never ever ask you for your recovery phrase.
 Only trust this bot with the recovery phrase."""
 
-
-#--------------------------------------------------------------------------------------------------
-# Called when extension is loaded
-#--------------------------------------------------------------------------------------------------
-async def setup(bot: commands.Bot):
-    await bot.add_cog(AccountCog(bot))
-
-
 #==================================================================================================
-# ACCOUNT COG
+# ACCOUNT MANAGEMENT VIEW
 #==================================================================================================
-class AccountCog(commands.Cog, name="Account Cog"):
+class AccountManagementView(discord.ui.View):
 
     PASSPHRASE = environ.get("SEEDPHRASE_PASSPHRASE")
 
     account_manager = Account()
     account_manager.enable_unaudited_hdwallet_features()
 
-    group_account = app_commands.Group(name="account", description=ACCOUNT_GROUP_DESCRIPTION)
-
     #----------------------------------------------------------------------------------------------
     # INIT
     #----------------------------------------------------------------------------------------------
-    def __init__(self, bot: commands.Bot):
-        self.bot = bot
+    def __init__(self):
+        super().__init__(timeout=None)
 
     #----------------------------------------------------------------------------------------------
-    # COMMAND: /signup
+    # SIGN UP BUTTON
     #----------------------------------------------------------------------------------------------
-    @group_account.command(name='signup', description="Create a new account")
-    async def signup(self, interaction: Interaction):
-        print(f"Received Account Signup Command from {interaction.user.display_name}")
-
+    @discord.ui.button(
+        label="Sign Up",
+        style=discord.ButtonStyle.green,
+        row=0,
+        custom_id="account-management:sign-up-button"
+    )
+    async def button_sign_up(self, interaction: discord.Interaction, button: discord.ui.Button):
         if interaction.user.id in user_accounts:
             # user already logged in
-            await interaction.response.send_message(
-                embed=Embed(
-                    title="Already Logged In",
-                    description="You are already logged in to an account"
-                ),
-                ephemeral=True
+            already_logged_in = discord.Embed(
+                title="Already Logged In",
+                description="You are already logged in to an account"
             )
+            await interaction.response.send_message(embed=already_logged_in, ephemeral=True)
             return
 
         # create new account
@@ -86,8 +67,8 @@ class AccountCog(commands.Cog, name="Account Cog"):
         # TODO: initialize new account on Nebula
 
         # send interaction response
-        seedphrase_file = File(fp=StringIO(seedphrase), filename="RecoveryPhrase.txt")
-        signup_embed = Embed(title="Signup Success", description=SIGNUP_MESSAGE)
+        seedphrase_file = discord.File(fp=StringIO(seedphrase), filename="RecoveryPhrase.txt")
+        signup_embed = discord.Embed(title="Signup Success", description=SIGNUP_MESSAGE)
 
         await interaction.response.send_message(
             embed=signup_embed,
@@ -96,15 +77,32 @@ class AccountCog(commands.Cog, name="Account Cog"):
         )
 
     #----------------------------------------------------------------------------------------------
-    # COMMAND: /logout
+    # LOG IN BUTTON
     #----------------------------------------------------------------------------------------------
-    @group_account.command(name='logout', description="Log out of your account")
-    async def logout(self, interaction: Interaction):
+    @discord.ui.button(
+        label="Log In",
+        style=discord.ButtonStyle.blurple,
+        row=1,
+        custom_id="account-management:log-in-button"
+    )
+    async def button_log_in(self, interaction: discord.Interaction, button: discord.ui.Button):
+        await interaction.response.send_modal(LogInModal(self.PASSPHRASE, self.account_manager))
+
+    #----------------------------------------------------------------------------------------------
+    # LOG OUT BUTTON
+    #----------------------------------------------------------------------------------------------
+    @discord.ui.button(
+        label="Log Out",
+        style=discord.ButtonStyle.red,
+        row=1,
+        custom_id="account-management:log-out-button"
+    )
+    async def button_log_out(self, interaction: discord.Interaction, button: discord.ui.Button):
         print(f"Received Account Logout Command from {interaction.user.display_name}")
 
         if interaction.user.id not in user_accounts:
             # user was not signed in
-            logout_embed = Embed(title="Already Logged Out")
+            logout_embed = discord.Embed(title="Already Logged Out")
             await interaction.response.send_message(embed=logout_embed, ephemeral=True)
             return
 
@@ -112,42 +110,43 @@ class AccountCog(commands.Cog, name="Account Cog"):
         user_accounts.pop(interaction.user.id)
 
         # send response
-        logout_embed = Embed(title="You Are Now Logged Out")
+        logout_embed = discord.Embed(title="You Are Now Logged Out")
         await interaction.response.send_message(embed=logout_embed, ephemeral=True)
 
-    #----------------------------------------------------------------------------------------------
-    # COMMAND: /login + file
-    #----------------------------------------------------------------------------------------------
-    @group_account.command(name='login', description="Log in to your account")
-    @app_commands.describe(recovery_phrase_file=SEEDPHRASE_FILE_DESCRIPTION)
-    async def login(self, interaction: Interaction, recovery_phrase_file: Attachment):
-        print(f"Received Account Login Command from {interaction.user.display_name}")
 
-        seedphrase = StringIO((await recovery_phrase_file.read()).decode('utf-8')).read()
-        await self.process_seedphrase(interaction, seedphrase)
+#==================================================================================================
+# LOG IN MODAL
+#==================================================================================================
+class LogInModal(discord.ui.Modal, title="Enter Recovery Phrase"):
 
-    #----------------------------------------------------------------------------------------------
-    # COMMAND: /login + seedphrase
-    #----------------------------------------------------------------------------------------------
-    @group_account.command(name='login-phrase', description=LOGIN_WITH_PHRASE_DESCRIPTION)
-    async def login_phrase(self, interaction: Interaction, recovery_phrase: str):
-        print(f"Received Account Login Command from {interaction.user.display_name}")
-        await self.process_seedphrase(interaction, recovery_phrase)
+    recovery_phrase = discord.ui.TextInput(
+        label="Recovery Phrase",
+        style=discord.TextStyle.short,
+        placeholder="12-Word Seed Phrase",
+    )
 
     #----------------------------------------------------------------------------------------------
-    # PROCESS SEEDPHRASE
+    # INIT
     #----------------------------------------------------------------------------------------------
-    async def process_seedphrase(self, interaction: Interaction, seedphrase: str):
-        # get account from seedphrase
+    def __init__(self, passphrase: str, account_manager: Account):
+        self.passphrase = passphrase
+        self.account_manager = account_manager
+        super().__init__()
+
+    #----------------------------------------------------------------------------------------------
+    # ON SUBMIT
+    #----------------------------------------------------------------------------------------------
+    async def on_submit(self, interaction: discord.Interaction):
         try:
             user_account: LocalAccount = self.account_manager.from_mnemonic(
-                mnemonic=seedphrase,
-                passphrase=self.PASSPHRASE
+                mnemonic=self.recovery_phrase.value,
+                passphrase=self.passphrase
             )
+            print("got user account")
         except ValidationError as e:
             print(f"Seedphrase Validation Failed")
             # send user the error message
-            embed = Embed(title="Login Error", description=e)
+            embed = discord.Embed(title="Login Error", description=e)
             await interaction.response.send_message(embed=embed, ephemeral=True)
             return
 
@@ -158,6 +157,6 @@ class AccountCog(commands.Cog, name="Account Cog"):
 
         # send response
         await interaction.response.send_message(
-            embed=Embed(title="Login Success"),
+            embed=discord.Embed(title="Login Success"),
             ephemeral=True
         )

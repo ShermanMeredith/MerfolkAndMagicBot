@@ -4,6 +4,8 @@ from os import environ
 import discord
 from discord.ext import commands
 
+from login_panel import AccountManagementView
+
 
 #==============================================================================
 # BOT CONFIGURATION
@@ -14,9 +16,20 @@ class MerfolkAndMagicBot(commands.Bot):
     #--------------------------------------------------------------------------
     def __init__(self):
         intents = discord.Intents.none()
+        # required to see emoji reactions
+        intents.guild_reactions = True
+        # required for checking message content
+        intents.guild_messages = True
+        intents.message_content = True
+        # required for keeping guild members cache up to date
+        intents.members = True
+        # required for on guild join event
+        # required for channel creation events for auto-message writing
+        intents.guilds = True
 
         self.initial_extensions = [
             "cogs.commands_account",
+            "cogs.commands_admin"
             #"cogs.command_go",
         ]
 
@@ -29,6 +42,7 @@ class MerfolkAndMagicBot(commands.Bot):
     # SETUP HOOK
     #--------------------------------------------------------------------------
     async def setup_hook(self):
+        self.add_view(AccountManagementView())
         for extension in self.initial_extensions:
             await self.load_extension(extension)
 
@@ -44,8 +58,8 @@ bot = MerfolkAndMagicBot()
 @bot.event
 async def on_ready():
     for guild in bot.guilds:
+        await bot.tree.sync(guild=discord.Object(id=guild.id))
         print(f"Connected to {guild.name}")
-    await bot.tree.sync()
 
 async def main():
     token = environ.get("BOT_TOKEN")
