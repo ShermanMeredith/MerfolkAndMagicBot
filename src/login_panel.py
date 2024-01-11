@@ -1,10 +1,15 @@
 from os import environ
 from io import StringIO
+
 import discord
+from discord.ext import commands
 from eth_account.signers.local import LocalAccount
 from eth_account import Account
 from eth_keys.exceptions import ValidationError
+
+from data.locations import Locations
 from utils.accounts import user_accounts
+import utils.skale as skale
 
 SIGNUP_MESSAGE = """Your new account has been created, and you are now logged in!
 
@@ -19,7 +24,9 @@ You will occasionally need it to log back in.
 We do not store your recovery phrase; it is your responsibility to keep it safe and not to lose it.
 Never share this recovery phrase with anyone else.
 Our team members will never ever ask you for your recovery phrase.
-Only trust this bot with the recovery phrase."""
+Only trust this bot with the recovery phrase.
+
+Now, press the Log In Button and enter your recovery phrase to begin."""
 
 #==================================================================================================
 # ACCOUNT MANAGEMENT VIEW
@@ -34,7 +41,8 @@ class AccountManagementView(discord.ui.View):
     #----------------------------------------------------------------------------------------------
     # INIT
     #----------------------------------------------------------------------------------------------
-    def __init__(self):
+    def __init__(self, bot: commands.Bot):
+        self.bot = bot
         super().__init__(timeout=None)
 
     #----------------------------------------------------------------------------------------------
@@ -47,6 +55,8 @@ class AccountManagementView(discord.ui.View):
         custom_id="account-management:sign-up-button"
     )
     async def button_sign_up(self, interaction: discord.Interaction, button: discord.ui.Button):
+        print(f"Received Sign Up Request from {interaction.user.display_name}")
+
         if interaction.user.id in user_accounts:
             # user already logged in
             already_logged_in = discord.Embed(
@@ -82,10 +92,11 @@ class AccountManagementView(discord.ui.View):
     @discord.ui.button(
         label="Log In",
         style=discord.ButtonStyle.blurple,
-        row=1,
+        row=0,
         custom_id="account-management:log-in-button"
     )
     async def button_log_in(self, interaction: discord.Interaction, button: discord.ui.Button):
+        print(f"Received Login Request from {interaction.user.display_name}")
         await interaction.response.send_modal(LogInModal(self.PASSPHRASE, self.account_manager))
 
     #----------------------------------------------------------------------------------------------
@@ -94,11 +105,11 @@ class AccountManagementView(discord.ui.View):
     @discord.ui.button(
         label="Log Out",
         style=discord.ButtonStyle.red,
-        row=1,
+        row=0,
         custom_id="account-management:log-out-button"
     )
     async def button_log_out(self, interaction: discord.Interaction, button: discord.ui.Button):
-        print(f"Received Account Logout Command from {interaction.user.display_name}")
+        print(f"Received Logout Request from {interaction.user.display_name}")
 
         if interaction.user.id not in user_accounts:
             # user was not signed in
@@ -142,21 +153,36 @@ class LogInModal(discord.ui.Modal, title="Enter Recovery Phrase"):
                 mnemonic=self.recovery_phrase.value,
                 passphrase=self.passphrase
             )
-            print("got user account")
         except ValidationError as e:
-            print(f"Seedphrase Validation Failed")
+            print(f"Seedphrase Validation From {interaction.user.display_name} Failed")
             # send user the error message
             embed = discord.Embed(title="Login Error", description=e)
             await interaction.response.send_message(embed=embed, ephemeral=True)
             return
 
-        print(f"Seedphrase Validation Success")
+        print(f"Seedphrase Validation From {interaction.user.display_name} Success")
 
         # store account in user accounts dictionary
         user_accounts[interaction.user.id] = user_account
 
-        # send response
-        await interaction.response.send_message(
-            embed=discord.Embed(title="Login Success"),
-            ephemeral=True
+        # add logged in role
+        role_to_add = interaction.guild.get_role(int(environ.get("LOGGED_IN_ROLE_ID")))
+        await interaction.user.add_roles(role_to_add)
+
+        # get player location
+        player_location = skale.get_player_location(interaction.user.id)
+        if player_location:
+            channel = interaction.guild.get_channel(Locations.location_channel_ids[player_location])
+        if not player_location:
+            channel = interaction.guild.get_channel(Locations.location_channel_ids[Locations.CITY_OUTSIDE])
+            await channel.set_permissions(interaction.user, read_messages=True, send_messages=True)
+            skale.set_player_location(interaction.user.id, Locations.CITY_OUTSIDE)
+            player_location = Locations.CITY_OUTSIDE
+
+        embed = discord.Embed(
+            title="Login Success",
+            description=f"You Find Yourself {Locations.location_names[player_location]}:\n{channel.mention}"
         )
+
+        # send response
+        await interaction.response.send_message(embed=embed, ephemeral=True)

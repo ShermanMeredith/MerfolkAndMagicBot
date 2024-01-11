@@ -28,9 +28,11 @@ class MerfolkAndMagicBot(commands.Bot):
         intents.guilds = True
 
         self.initial_extensions = [
-            "cogs.commands_account",
-            "cogs.commands_admin"
-            #"cogs.command_go",
+            "cogs.command_go",
+            #"cogs.commands_account",
+            "cogs.commands_admin",
+            "cogs.validator_location",
+            "cogs.validator_login"
         ]
 
         super().__init__(
@@ -42,7 +44,7 @@ class MerfolkAndMagicBot(commands.Bot):
     # SETUP HOOK
     #--------------------------------------------------------------------------
     async def setup_hook(self):
-        self.add_view(AccountManagementView())
+        self.add_view(AccountManagementView(self))
         for extension in self.initial_extensions:
             await self.load_extension(extension)
 
@@ -57,8 +59,8 @@ bot = MerfolkAndMagicBot()
 
 @bot.event
 async def on_ready():
+    await bot.tree.sync()
     for guild in bot.guilds:
-        await bot.tree.sync(guild=discord.Object(id=guild.id))
         print(f"Connected to {guild.name}")
 
 async def main():
