@@ -69,20 +69,20 @@ class LocationValidator(commands.Cog, name="Location Validator"):
             member_name = f"{member.display_name} ({member.id})"
 
             player_location_id = skale.get_player_location(member_id)
+            region_role = self.region_roles[player_location_id]
+            player_region_roles = [
+                role for role in member.roles
+                if role in self.region_roles.values()
+                and role != region_role
+            ]
 
-            for role in member.roles:
-                role_location = next((
-                        loc_id for loc_id, loc_role in self.region_roles.items()
-                        if loc_role == role
-                    ), None
-                )
+            if player_region_roles:
+                for role in player_region_roles:
+                    print(f"{member_name} - Removing {role.name}")
+                await member.remove_roles(player_region_roles)
 
-                if role_location is not None and role_location != player_location_id:
-                    print(f"{member_name} - Removing {self.region_roles[role_location].name}")
-                    await member.remove_roles(self.region_roles[role_location])
-
-            if self.region_roles[player_location_id] not in member.roles:
-                print(f"{member_name} - Adding {self.region_roles[player_location_id].name}")
-                await member.add_roles(self.region_roles[player_location_id])
+            if region_role not in member.roles:
+                print(f"{member_name} - Adding {region_role.name}")
+                await member.add_roles(region_role)
 
         self.is_validating_locations = False
