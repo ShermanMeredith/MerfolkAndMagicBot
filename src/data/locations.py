@@ -82,5 +82,46 @@ class Locations:
         GRAVEYARD: "At the Graveyard"
     }
 
+    location_descriptions = {
+        CITY_OUTSIDE: "You can't see anything , <@267801271887593478> didn't write it yet.",
+        CITY_ALCHEMIST: "You can't see anything , <@267801271887593478> didn't write it yet.",
+        CITY_BLACKSMITH: (
+            "You see Kate the blacksmith hammering away at the anvil.\n"
+            "You see things for sale.\n"
+            "The exit back to Mara is behind you."
+        ),
+        CITY_CLINIC: "You can't see anything , <@267801271887593478> didn't write it yet.",
+        CITY_MAGE_TOWER: "You can't see anything , <@267801271887593478> didn't write it yet.",
+        CITY_MARKETPLACE: "You can't see anything , <@267801271887593478> didn't write it yet.",
+        CITY_SQUARE: (
+            "Nearby, you see a Blacksmith.\n"
+            "In the distance, you see the north gate that leads to the Mountains."),
+        CITY_TOWN_HALL: "You can't see anything , <@267801271887593478> didn't write it yet.",
+        MOUNTAIN_BASE: (
+            "You find yourself at the base of the Mountains.\n"
+            "You see the entrance to the Mines. Behind you is the city of Mara."
+        ),
+        MOUNTAIN_B1: (
+            "You just see regular rocks.\n"
+            "You might need to go deeper to find ores."
+        ),
+        MOUNTAIN_B2: (
+            "You see the stairs that go up and the stairs that go down.\n"
+            "You see rocks with glints of Copper, ready to mine."
+        ),
+        MOUNTAIN_HALL_MID: "You can't see anything , <@267801271887593478> didn't write it yet.",
+        MOUNTAIN_HALL_EAST: "You can't see anything , <@267801271887593478> didn't write it yet.",
+        MOUNTAIN_HALL_WEST: "You can't see anything , <@267801271887593478> didn't write it yet.",
+        MOUNTAIN_B4: (
+            "You see the stairs that go up and the stairs that go down.\n",
+            "You see <Skeleton> blocking the stairs that go down.\n",
+            "You look carefully at <Skeleton>. It is LVL 1. You can attack it.\n",
+            "You see rocks with glints of Copper, ready to mine."
+        ),
+        GRAVEYARD: "You can't see anything , <@267801271887593478> didn't write it yet.",
+        FOREST: "You can't see anything , <@267801271887593478> didn't write it yet.",
+        BEACH: "You can't see anything, <@267801271887593478> didn't write it yet."
+    }
+
     def get_region(location: int) -> int:
         return int(location/100)

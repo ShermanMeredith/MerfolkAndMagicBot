@@ -28,9 +28,10 @@ class MerfolkAndMagicBot(commands.Bot):
         intents.guilds = True
 
         self.initial_extensions = [
+            "cogs.commands_admin",
             "cogs.command_go",
             "cogs.command_help",
-            "cogs.commands_admin",
+            "cogs.command_look",
             "cogs.validator_location",
             "cogs.validator_login"
         ]
