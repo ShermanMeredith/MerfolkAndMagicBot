@@ -8,6 +8,19 @@ LOGIN_CHANNELS_FILEPATH = "src/data/login_channels.json"
 
 
 #----------------------------------------------------------------------------------------------
+# GET LOGIN CHANNEL ID
+#----------------------------------------------------------------------------------------------
+def get_login_channel_id(guild_id: int) -> Optional[int]:
+    login_channels: Dict[str, str] = {}
+    with open(LOGIN_CHANNELS_FILEPATH) as f:
+        try:
+            login_channels = json.load(f)
+        except:
+            return None
+    if str(guild_id) in login_channels:
+        return int(login_channels[str(guild_id)])
+
+#----------------------------------------------------------------------------------------------
 # GET LOGIN CHANNEL
 #----------------------------------------------------------------------------------------------
 def get_login_channel(guild: discord.Guild) -> Optional[discord.TextChannel]:

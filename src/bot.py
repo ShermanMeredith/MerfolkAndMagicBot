@@ -29,7 +29,7 @@ class MerfolkAndMagicBot(commands.Bot):
 
         self.initial_extensions = [
             "cogs.command_go",
-            #"cogs.commands_account",
+            "cogs.command_help",
             "cogs.commands_admin",
             "cogs.validator_location",
             "cogs.validator_login"

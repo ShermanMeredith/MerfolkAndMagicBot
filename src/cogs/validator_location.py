@@ -1,4 +1,3 @@
-import logging
 from os import environ
 from typing import Dict
 
@@ -42,10 +41,7 @@ class LocationValidator(commands.Cog, name="Location Validator"):
     @commands.Cog.listener()
     async def on_ready(self):
         if not self.is_initialized:
-
-            guild_id = 1007709532497137835
-
-            self.guild = self.bot.get_guild(guild_id)
+            self.guild = self.bot.get_guild(int(environ.get("GUILD_ID")))
 
             for location in Locations.location_names:
                 region = Locations.get_region(location)

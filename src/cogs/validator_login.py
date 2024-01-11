@@ -38,9 +38,7 @@ class LoginValidator(commands.Cog, name="LoginValidator"):
     async def on_ready(self):
         if not self.is_initialized:
 
-            guild_id = 1007709532497137835
-
-            self.guild = self.bot.get_guild(guild_id)
+            self.guild = self.bot.get_guild(int(environ.get("GUILD_ID")))
             self.logged_in_role = self.guild.get_role(int(environ.get("LOGGED_IN_ROLE_ID")))
 
             self.is_initialized = True
