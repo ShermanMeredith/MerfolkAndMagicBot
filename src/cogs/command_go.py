@@ -1,14 +1,20 @@
+from os import environ
 from typing import Optional
 
 import discord
 from discord.ext import commands
 
+import utils.database as database
 import utils.skale as skale
+from utils.accounts import user_accounts
 from data.locations import Locations
 
 # Config Variables
 DESCRIPTION = "Leave this room and enter another room"
 DIRECTION_DESCRIPTION = "Where do you want to go?"
+
+LOGIN_FIRST = f"""Looks like you aren't logged in right now...
+Go to <#{database.get_login_channel_id(int(environ.get("GUILD_ID")))}> to sign up or log in, then try again"""
 
 CITY_OUTSIDE_DIRECTIONS = set(["gates", "gate", "entrance"])
 CITY_SQUARE_DIRECTIONS = set(["mara", "out", "outside", "city"])
@@ -69,9 +75,9 @@ class GoCommand(commands.Cog, name="Go Command"):
         current_location = skale.get_player_location(interaction.user.id)
         previous_location = skale.get_previous_location(interaction.user.id)
 
-        if not current_location:
-            message = "No player data found... Try logging in again."
-            await interaction.response.send_message(message, ephemeral=True)
+        if not current_location or interaction.user.id not in user_accounts:
+            embed = discord.Embed(title="No Account Detected", description=LOGIN_FIRST)
+            await interaction.response.send_message(embed=embed, ephemeral=True)
             return
 
         message = f"`/go {direction}`\n"
