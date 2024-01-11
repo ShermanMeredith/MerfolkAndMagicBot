@@ -47,7 +47,7 @@ class HelpCommand(commands.Cog, name="Help Command"):
     # COMMAND: /help
     #----------------------------------------------------------------------------------------------
     @discord.app_commands.command(name='help', description=DESCRIPTION)
-    async def leaderboard(self, interaction: discord.Interaction):
+    async def help(self, interaction: discord.Interaction):
         print(f"Received /help command from {interaction.user.display_name}")
 
         # check whether user is logged in
