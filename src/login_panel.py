@@ -11,9 +11,7 @@ from data.locations import Locations
 from utils.accounts import user_accounts
 import utils.skale as skale
 
-SIGNUP_MESSAGE = """Your new account has been created, and you are now logged in!
-
-When you are ready to continue, type /start to start your adventure!
+SIGNUP_MESSAGE = """Your new account has been created!
 
 >>> **IMPORTANT:**
 >>> Download and save your recovery phrase!!! <<<

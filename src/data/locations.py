@@ -62,24 +62,24 @@ class Locations:
     }
 
     location_names = {
-        CITY_OUTSIDE: "Outside the North Gate of the City of Mara",
-        CITY_ALCHEMIST: "At the Alchemist's Lab",
-        CITY_BLACKSMITH: "At the Blacksmith's Shop",
-        CITY_CLINIC: "At the Clinic",
-        CITY_MAGE_TOWER: "At the Mage Tower",
-        CITY_MARKETPLACE: "At the Marketplace",
-        CITY_SQUARE: "In Mara, at the Town Square",
-        CITY_TOWN_HALL: "At the Town Hall",
-        MOUNTAIN_BASE: "At the Base of the Mountain",
-        MOUNTAIN_B1: "In B1 of the Mines",
-        MOUNTAIN_B2: "In B2 of the Mines",
-        MOUNTAIN_HALL_MID: "In the Grand Hall",
-        MOUNTAIN_HALL_WEST: "In the West Wing of the Grand Hall",
-        MOUNTAIN_HALL_EAST: "In the East Wing of the Grand Hall",
-        MOUNTAIN_B4: "In B4 of the Mines",
-        BEACH: "At the Beach",
-        FOREST: "In the Forest",
-        GRAVEYARD: "At the Graveyard"
+        CITY_OUTSIDE: "outside the North Gate of the City of Mara",
+        CITY_ALCHEMIST: "at the Alchemist's Lab",
+        CITY_BLACKSMITH: "at the Blacksmith's Shop",
+        CITY_CLINIC: "at the Clinic",
+        CITY_MAGE_TOWER: "at the Mage Tower",
+        CITY_MARKETPLACE: "at the Marketplace",
+        CITY_SQUARE: "in Mara, at the Town Square",
+        CITY_TOWN_HALL: "at the Town Hall",
+        MOUNTAIN_BASE: "at the base of the Mountain",
+        MOUNTAIN_B1: "in B1 of the Mines",
+        MOUNTAIN_B2: "in B2 of the Mines",
+        MOUNTAIN_HALL_MID: "in the Grand Hall",
+        MOUNTAIN_HALL_WEST: "in the West Wing of the Grand Hall",
+        MOUNTAIN_HALL_EAST: "in the East Wing of the Grand Hall",
+        MOUNTAIN_B4: "in B4 of the Mines",
+        BEACH: "at the Beach",
+        FOREST: "in the Forest",
+        GRAVEYARD: "at the Graveyard"
     }
 
     location_descriptions = {

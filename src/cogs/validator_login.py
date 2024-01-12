@@ -72,7 +72,7 @@ class LoginValidator(commands.Cog, name="LoginValidator"):
 
         for member in to_remove:
             member_name = f"{member.display_name} ({member.id})"
-            print(f"{member_name} - Adding {self.logged_in_role.name}")
+            print(f"{member_name} - Removing {self.logged_in_role.name}")
             await member.remove_roles(self.logged_in_role)
 
         self.is_validating_logged_in_users = False
