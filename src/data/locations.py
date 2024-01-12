@@ -123,5 +123,17 @@ class Locations:
         BEACH: "You can't see anything, <@267801271887593478> didn't write it yet."
     }
 
+    shop_items = {
+        CITY_ALCHEMIST: [],
+        CITY_BLACKSMITH: [
+            {"name": "Copper Sword", "price": 1000},
+            {"name": "Copper Ore", "price": 900},
+            {"name": "100 Gold", "price": -100}
+        ],
+        CITY_CLINIC: [],
+        CITY_MAGE_TOWER: [],
+        CITY_MARKETPLACE: []
+    }
+
     def get_region(location: int) -> int:
         return int(location/100)

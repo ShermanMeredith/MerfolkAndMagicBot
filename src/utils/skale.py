@@ -1,13 +1,22 @@
 import json
+import pickle
+from collections import defaultdict
+from dataclasses import dataclass
 from os import environ
-from typing import Dict, Optional
+from typing import Any, DefaultDict, Dict, List, Optional
 
 from web3 import Web3
 from web3.contract.contract import Contract
 
 import data.abis as abis
-from utils.types import CharacterInfo, Location
+from data.locations import Locations
 from utils.accounts import user_accounts
+
+
+@dataclass
+class Inventory:
+    gold_balance: int
+    items: DefaultDict[str, int]
 
 
 #==================================================================================================
@@ -39,7 +48,7 @@ class Skale:
 
 # TODO: replace with actual skale data
 PLAYER_LOCATIONS_FILEPATH = "src/data/player_locations.json"
-PLAYER_INVENTORIES_FILEPATH = "src/data/player_inventory.json"
+PLAYER_INVENTORIES_FILEPATH = "src/data/player_inventories.pkl"
 
 #----------------------------------------------------------------------------------------------
 # GET PLAYER LOCATION
@@ -87,7 +96,6 @@ def get_previous_location(member_id: int) -> Optional[int]:
     else:
         return None
 
-
 #----------------------------------------------------------------------------------------------
 # SET PLAYER LOCATION
 #----------------------------------------------------------------------------------------------
@@ -109,4 +117,43 @@ def set_player_location(member_id: int, location_id: int):
 
     with open(PLAYER_LOCATIONS_FILEPATH, 'w') as f:
         json.dump(player_locations, f)
-        f.close()
+
+#----------------------------------------------------------------------------------------------
+# GET PLAYER INVENTORY
+#----------------------------------------------------------------------------------------------
+def get_player_inventory(member_id: int) -> Inventory:
+    player_inventory = Inventory(0, defaultdict(int))
+
+    if member_id in user_accounts:
+        with open(PLAYER_INVENTORIES_FILEPATH, "rb") as f:
+            try:
+                player_inventories = pickle.load(f)
+                if str(member_id) in player_inventories and player_inventories[str(member_id)]:
+                    player_inventory = player_inventories[str(member_id)]
+                else:
+                    set_player_inventory(member_id, player_inventory)
+            except:
+                set_player_inventory(member_id, player_inventory)
+
+    return player_inventory
+
+#----------------------------------------------------------------------------------------------
+# SET PLAYER INVENTORY
+#----------------------------------------------------------------------------------------------
+def set_player_inventory(member_id: int, inventory: Inventory):
+    player_inventories: Dict[str, Inventory] = {}
+    with open(PLAYER_INVENTORIES_FILEPATH, "rb") as f:
+        try:
+            player_inventories = pickle.load(f)
+        except:
+            pass
+
+    player_inventories[str(member_id)] = inventory
+
+    with open(PLAYER_INVENTORIES_FILEPATH, 'wb') as f:
+        f.write(pickle.dumps(player_inventories))
+
+#-------
+        
+def get_shop_items(location_id: int) -> Optional[List[Dict[str, Any]]]:
+    return Locations.shop_items.get(location_id, None)
