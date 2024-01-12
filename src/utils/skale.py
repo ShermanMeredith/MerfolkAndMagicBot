@@ -37,15 +37,14 @@ class Skale:
     def set_character_name(self, name: str):
         pass
 
-
-
-# TODO: replace with actual database
+# TODO: replace with actual skale data
 PLAYER_LOCATIONS_FILEPATH = "src/data/player_locations.json"
+PLAYER_INVENTORIES_FILEPATH = "src/data/player_inventory.json"
 
 #----------------------------------------------------------------------------------------------
 # GET PLAYER LOCATION
 #----------------------------------------------------------------------------------------------
-def get_player_location(member_id: int) -> Optional[int]:
+def get_player_location(member_id: int) -> Optional[Location]:
     if member_id not in user_accounts:
         return None
 
@@ -59,7 +58,11 @@ def get_player_location(member_id: int) -> Optional[int]:
     if str(member_id) not in player_locations:
         return None
 
-    return int(player_locations[str(member_id)]["current_location"])
+    current_location = player_locations[str(member_id)]["current_location"]
+    if current_location:
+        return int(current_location)
+    else:
+        return None
 
 #----------------------------------------------------------------------------------------------
 # GET PREVIOUS LOCATION
@@ -78,7 +81,11 @@ def get_previous_location(member_id: int) -> Optional[int]:
     if str(member_id) not in player_locations:
         return None
 
-    return int(player_locations[str(member_id)]["previous_location"])
+    previous_location = player_locations[str(member_id)]["previous_location"]
+    if previous_location:
+        return int(previous_location)
+    else:
+        return None
 
 
 #----------------------------------------------------------------------------------------------
@@ -92,6 +99,11 @@ def set_player_location(member_id: int, location_id: int):
         except:
             pass
 
+    if str(member_id) not in player_locations or not player_locations[str(member_id)]:
+        player_locations[str(member_id)] = {
+            "current_location": None,
+            "previous_location": None
+        }
     player_locations[str(member_id)]["previous_location"] = player_locations[str(member_id)]["current_location"]
     player_locations[str(member_id)]["current_location"] = location_id
 

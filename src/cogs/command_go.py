@@ -72,12 +72,14 @@ class GoCommand(commands.Cog, name="Go Command"):
     async def go(self, interaction: discord.Interaction, direction: str):
         print(f"Received /go {direction} command from {interaction.user.display_name}")
 
+        await interaction.response.defer(thinking=True, ephemeral=True)
+
         current_location = skale.get_player_location(interaction.user.id)
         previous_location = skale.get_previous_location(interaction.user.id)
 
         if not current_location or interaction.user.id not in user_accounts:
             embed = discord.Embed(title="No Account Detected", description=LOGIN_FIRST)
-            await interaction.response.send_message(embed=embed, ephemeral=True)
+            await interaction.followup.send(embed=embed, ephemeral=True)
             return
 
         message = f"`/go {direction}`\n"
@@ -90,18 +92,23 @@ class GoCommand(commands.Cog, name="Go Command"):
 
         if not new_location:
             # edge cases
-            if direction == "shop":
-                message += "Specify Blacksmith, Alchemist, or Marketplace"
-                await interaction.response.send_message(message, ephemeral=True)
+            if direction == "shop" and Locations.get_region(current_location) == Locations.Region.CITY:
+                message += "Specify Blacksmith, Alchemist, or Marketplace."
+                await interaction.followup.send(message, ephemeral=True)
+            elif direction == "stairs" and \
+                Locations.get_region(current_location) == Locations.Region.MOUNTAIN and \
+                current_location != Locations.MOUNTAIN_BASE:
+                message += "Specify which stairs, Up or Down."
+                await interaction.followup.send(message, ephemeral=True)
             # invalid direction
             else:
                 message += "Can't Do That."
-                await interaction.response.send_message(message, ephemeral=True)
+                await interaction.followup.send(message, ephemeral=True)
 
         # same location
         elif new_location == current_location:
-            message += f"You Are Already {Locations.location_names[new_location]}."
-            await interaction.response.send_message(message, ephemeral=True)
+            message += f"You are already {Locations.location_names[new_location]}."
+            await interaction.followup.send(message, ephemeral=True)
 
         # go to new location
         else:
@@ -115,11 +122,11 @@ class GoCommand(commands.Cog, name="Go Command"):
 
             if current_region != new_region:
                 await self.set_new_roles(interaction, current_region, new_region)
-                message += "Travel Far And "
+                message += "travel far and "
 
             new_channel = interaction.guild.get_channel(Locations.location_channel_ids[new_location])
-            message += f"Find Yourself {Locations.location_names[new_location]}:\n{new_channel.mention}"
-            await interaction.response.send_message(embed=discord.Embed(description=message), ephemeral=True)
+            message += f"find yourself {Locations.location_names[new_location]}:\n{new_channel.mention}"
+            await interaction.followup.send(embed=discord.Embed(description=message), ephemeral=True)
 
     #----------------------------------------------------------------------------------------------
     # SET NEW ROLES
@@ -155,7 +162,7 @@ class GoCommand(commands.Cog, name="Go Command"):
             await region_channel.set_permissions(interaction.user, read_messages=True, send_messages=True)
 
         # remove access to previous room channel
-        if prev_location != new_location:
+        if prev_location and prev_location != new_location:
             prev_channel = interaction.guild.get_channel(Locations.location_channel_ids[prev_location])
             await prev_channel.set_permissions(interaction.user, read_messages=False, send_messages=False)
         

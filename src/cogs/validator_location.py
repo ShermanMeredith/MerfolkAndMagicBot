@@ -69,6 +69,9 @@ class LocationValidator(commands.Cog, name="Location Validator"):
             member_name = f"{member.display_name} ({member.id})"
 
             player_location_id = skale.get_player_location(member_id)
+            if not player_location_id:
+                return
+
             region_role = self.region_roles[player_location_id]
             player_region_roles = [
                 role for role in member.roles

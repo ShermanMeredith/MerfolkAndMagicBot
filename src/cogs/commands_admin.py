@@ -77,7 +77,7 @@ class AdminCog(commands.Cog, name="Admin Cog"):
             print("channel should already exist")
             if discord.utils.get(interaction.guild.channels, name=existing_login_channel):
                 print("channel still exists!")
-                await interaction.response.send_message(
+                await interaction.followup.send(
                     f"{existing_login_channel.mention} is already your Login Channel."
                     "\nDelete it before creating a new one."
                 )
@@ -90,7 +90,7 @@ class AdminCog(commands.Cog, name="Admin Cog"):
 
         if panel_channel:
             print("channel already exists!")
-            await interaction.response.send_message(
+            await interaction.followup.send(
                 f"Login Channel {panel_channel.mention} already exists."
                 "\nDelete the channel first if you want to re-send the login panel"
             )
