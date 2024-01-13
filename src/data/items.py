@@ -19,3 +19,9 @@ class Items:
 
     def get_item_type(item_id: int) -> int:
         return int(item_id/100)
+    
+    def get_equipped_version(item_id: int) -> int:
+        return 300 + (item_id % 100)
+
+    def get_unequipped_version(item_id: int) -> int:
+        return 200 + (item_id % 100)

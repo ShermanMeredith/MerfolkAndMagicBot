@@ -53,7 +53,9 @@ class InventoryCommand(commands.Cog, name="Inventory Command"):
         if len(inventory.items) > 0:
             description = ">>> "
             for item_id in inventory.items:
-                description += f"{inventory.items[item_id]} <{Items.item_names[item_id]}>"
+                if inventory.items[item_id] == 0:
+                    continue
+                description += f"{inventory.items[item_id]}x <{Items.item_names[item_id]}>"
                 if Items.get_item_type(item_id) == ItemType.EQUIPPABLE:
                     description += " [can __equip__]"
                 elif Items.get_item_type(item_id) == ItemType.EQUIPPED:
