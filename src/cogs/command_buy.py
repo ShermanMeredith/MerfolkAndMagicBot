@@ -4,6 +4,7 @@ from typing import List, Dict, Any
 import discord
 from discord.ext import commands
 
+from data.items import Items
 from utils.accounts import user_accounts
 import utils.database as database
 import utils.skale as skale
@@ -80,7 +81,8 @@ class ShopItemButton(discord.ui.Button):
     #----------------------------------------------------------------------------------------------
     def __init__(self, row: int, shop_item: Dict[str, Any]):
         self.price = shop_item["price"]
-        self.item_name = shop_item["name"]
+        self.item_id = shop_item["id"]
+        self.item_name = Items.item_names[self.item_id]
 
         button_label = f"<{self.item_name}> — {self.price}g"
 
@@ -98,7 +100,8 @@ class ShopItemButton(discord.ui.Button):
         player_inventory = skale.get_player_inventory(interaction.user.id)
         if player_inventory.gold_balance >= self.price:
             player_inventory.gold_balance -= self.price
-            player_inventory.items[self.item_name] += 1
+            if self.price >= 0:
+                player_inventory.items[self.item_id] += 1
             message += f"You bought <{self.item_name}>!"
             skale.set_player_inventory(interaction.user.id, player_inventory)
         else:

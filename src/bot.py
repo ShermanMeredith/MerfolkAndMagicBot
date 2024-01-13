@@ -32,6 +32,7 @@ class MerfolkAndMagicBot(commands.Bot):
             "cogs.command_buy",
             "cogs.command_go",
             "cogs.command_help",
+            "cogs.command_inventory",
             "cogs.command_look",
             "cogs.validator_location",
             "cogs.validator_login"

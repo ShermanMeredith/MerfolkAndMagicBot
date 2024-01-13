@@ -16,7 +16,7 @@ from utils.accounts import user_accounts
 @dataclass
 class Inventory:
     gold_balance: int
-    items: DefaultDict[str, int]
+    items: DefaultDict[int, int]
 
 
 #==================================================================================================
@@ -33,18 +33,11 @@ class Skale:
 
     #----------------------------------------------------------------------------------------------
     #----------------------------------------------------------------------------------------------
-    def get_character_info(self, user_id: int) -> CharacterInfo:
-        character_id = self.get_character_id(user_id)
-        result = self.character_contract.functions.get_character_info(character_id)
-        return CharacterInfo(result[0], result[1], result[2], Location(result[3], result[4]))
+    #def get_character_info(self, user_id: int) -> CharacterInfo:
+        #character_id = self.get_character_id(user_id)
+        #result = self.character_contract.functions.get_character_info(character_id)
+        #return CharacterInfo(result[0], result[1], result[2], Location(result[3], result[4]))
 
-    #----------------------------------------------------------------------------------------------
-    #----------------------------------------------------------------------------------------------
-    def get_character_id(self, user_id: int) -> int:
-        return 1
-
-    def set_character_name(self, name: str):
-        pass
 
 # TODO: replace with actual skale data
 PLAYER_LOCATIONS_FILEPATH = "src/data/player_locations.json"
@@ -53,7 +46,7 @@ PLAYER_INVENTORIES_FILEPATH = "src/data/player_inventories.pkl"
 #----------------------------------------------------------------------------------------------
 # GET PLAYER LOCATION
 #----------------------------------------------------------------------------------------------
-def get_player_location(member_id: int) -> Optional[Location]:
+def get_player_location(member_id: int) -> Optional[int]:
     if member_id not in user_accounts:
         return None
 

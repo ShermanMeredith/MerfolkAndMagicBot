@@ -1,3 +1,6 @@
+from typing import Any, Dict, List
+from data.items import Items
+
 class Locations:
     class Region:
         CITY = 1
@@ -88,47 +91,47 @@ class Locations:
         CITY_BLACKSMITH: (
             "You see Kate the blacksmith hammering away at the anvil.\n"
             "You see things for sale.\n"
-            "The exit back to Mara is behind you."
+            "The exit back to __Mara__ is behind you."
         ),
         CITY_CLINIC: "You can't see anything , <@267801271887593478> didn't write it yet.",
         CITY_MAGE_TOWER: "You can't see anything , <@267801271887593478> didn't write it yet.",
         CITY_MARKETPLACE: "You can't see anything , <@267801271887593478> didn't write it yet.",
         CITY_SQUARE: (
-            "Nearby, you see a Blacksmith.\n"
-            "In the distance, you see the north gate that leads to the Mountains."),
+            "Nearby, you see a __Blacksmith__.\n"
+            "In the distance, you see the north gate that leads to the __Mountain__."),
         CITY_TOWN_HALL: "You can't see anything , <@267801271887593478> didn't write it yet.",
         MOUNTAIN_BASE: (
             "You find yourself at the base of the Mountains.\n"
-            "You see the entrance to the Mines. Behind you is the city of Mara."
+            "You see the entrance to the __Mines__. Behind you is the city of __Mara__."
         ),
         MOUNTAIN_B1: (
             "You just see regular rocks.\n"
             "You might need to go deeper to find ores."
         ),
         MOUNTAIN_B2: (
-            "You see the stairs that go up and the stairs that go down.\n"
-            "You see rocks with glints of Copper, ready to mine."
+            "You see the stairs __up__ and the stairs __down__.\n"
+            "You see rocks with glints of Copper, ready to __mine__."
         ),
         MOUNTAIN_HALL_MID: "You can't see anything , <@267801271887593478> didn't write it yet.",
         MOUNTAIN_HALL_EAST: "You can't see anything , <@267801271887593478> didn't write it yet.",
         MOUNTAIN_HALL_WEST: "You can't see anything , <@267801271887593478> didn't write it yet.",
         MOUNTAIN_B4: (
-            "You see the stairs that go up and the stairs that go down.\n",
-            "You see <Skeleton> blocking the stairs that go down.\n",
-            "You look carefully at <Skeleton>. It is LVL 1. You can attack it.\n",
-            "You see rocks with glints of Copper, ready to mine."
+            "You see the stairs __up__ and the stairs __down__.\n",
+            "You see <Skeleton> blocking the stairs that go __down__.\n",
+            "You look carefully at <Skeleton>. It is LVL 1. You can __attack__ it.\n",
+            "You see rocks with glints of Copper, ready to __mine__."
         ),
         GRAVEYARD: "You can't see anything , <@267801271887593478> didn't write it yet.",
         FOREST: "You can't see anything , <@267801271887593478> didn't write it yet.",
         BEACH: "You can't see anything, <@267801271887593478> didn't write it yet."
     }
 
-    shop_items = {
+    shop_items: Dict[int, List[Dict[str, Any]]] = {
         CITY_ALCHEMIST: [],
         CITY_BLACKSMITH: [
-            {"name": "Copper Sword", "price": 1000},
-            {"name": "Copper Ore", "price": 900},
-            {"name": "100 Gold", "price": -100}
+            {"id": Items.COPPER_SWORD_UNEQUIPPED, "price": 1000},
+            {"id": Items.COPPER_ORE, "price": 900},
+            {"id": Items.HUNDRED_GOLD, "price": -100}
         ],
         CITY_CLINIC: [],
         CITY_MAGE_TOWER: [],
