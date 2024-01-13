@@ -116,9 +116,9 @@ class Locations:
         MOUNTAIN_HALL_EAST: "You can't see anything , <@267801271887593478> didn't write it yet.",
         MOUNTAIN_HALL_WEST: "You can't see anything , <@267801271887593478> didn't write it yet.",
         MOUNTAIN_B4: (
-            "You see the stairs __up__ and the stairs __down__.\n",
-            "You see <Skeleton> blocking the stairs that go __down__.\n",
-            "You look carefully at <Skeleton>. It is LVL 1. You can __attack__ it.\n",
+            "You see the stairs __up__ and the stairs __down__.\n"
+            "You see <Skeleton> blocking the stairs that go __down__.\n"
+            "You look carefully at <Skeleton>. It is LVL 1. You can __attack__ it.\n"
             "You see rocks with glints of Copper, ready to __mine__."
         ),
         GRAVEYARD: "You can't see anything , <@267801271887593478> didn't write it yet.",
@@ -127,6 +127,18 @@ class Locations:
     }
 
     location_has_copper = {MOUNTAIN_B2: True, MOUNTAIN_B4: True}
+
+    forge_items: Dict[int, List[Dict[str, Any]]] = {
+        CITY_ALCHEMIST: [],
+        CITY_BLACKSMITH: [
+            {
+                "id": Items.COPPER_SWORD_UNEQUIPPED,
+                "ingredients": {
+                    Items.COPPER_ORE: 1
+                }
+            },
+        ]
+    }
 
     shop_items: Dict[int, List[Dict[str, Any]]] = {
         CITY_ALCHEMIST: [],

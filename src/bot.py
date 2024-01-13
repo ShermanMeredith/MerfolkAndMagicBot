@@ -31,6 +31,7 @@ class MerfolkAndMagicBot(commands.Bot):
             "cogs.commands_admin",
             "cogs.command_buy",
             "cogs.commands_equip",
+            "cogs.command_forge",
             "cogs.command_go",
             "cogs.command_help",
             "cogs.command_inventory",
