@@ -11,6 +11,7 @@ import utils.database as database
 import utils.skale as skale
 from data.locations import Locations
 from cogs.command_go import GoCommand
+from utils.skale import Inventory
 
 # Config Variables
 DESCRIPTION = "Attack an enemy"
@@ -79,36 +80,45 @@ class AttackCommand(commands.Cog, name="Attack Command"):
             await interaction.response.send_message(embed=embed, ephemeral=True)
             return
 
+        player_inventory = skale.get_player_inventory(interaction.user.id)
+        player_stats = skale.get_player_stats(interaction.user.id)
+
         if location == Locations.CITY_BLACKSMITH:
-            message += "You go to attack Kate the Blacksmith, but she easily kicks your ass.\n`You are dead`"
-            embed = discord.Embed(description=message)
-            await interaction.response.send_message(embed=embed, ephemeral=True)
+            message += "You go to attack Kate the Blacksmith, but she easily kicks your ass."
+            embeds = [discord.Embed(description=message)]
+            message = "You collapse."
+            await self.die(message, interaction, player_inventory, player_stats, embeds)
+            await interaction.response.send_message(embeds=embeds, ephemeral=True)
             return
 
         elif location == Locations.CITY_ALCHEMIST:
-            message += "You go to attack the Alchemist, but he easily kicks your ass.\n`You are dead`"
-            embed = discord.Embed(description=message)
-            await interaction.response.send_message(embed=embed, ephemeral=True)
+            message += "You go to attack the Alchemist, but he easily kicks your ass."
+            embeds = [discord.Embed(description=message)]
+            message = "You collapse."
+            await self.die(message, interaction, player_inventory, player_stats, embeds)
+            await interaction.response.send_message(embeds=embeds, ephemeral=True)
             return
 
         elif location == Locations.CITY_MAGE_TOWER:
-            message += "You go to attack the Mage, but he easily kicks your ass.\n`You are dead`"
-            embed = discord.Embed(description=message)
-            await interaction.response.send_message(embed=embed, ephemeral=True)
+            message += "You go to attack the Mage, but he easily kicks your ass."
+            embeds = [discord.Embed(description=message)]
+            message = "You collapse."
+            await self.die(message, interaction, player_inventory, player_stats, embeds)
+            await interaction.response.send_message(embeds=embeds, ephemeral=True)
             return
 
         elif location == Locations.CITY_CLINIC:
-            message += "You go to attack the Doctor, but he easily kicks your ass.\n`You are dead`"
-            embed = discord.Embed(description=message)
-            await interaction.response.send_message(embed=embed, ephemeral=True)
+            message += "You go to attack the Doctor, but he easily kicks your ass."
+            embeds = [discord.Embed(description=message)]
+            message = "You collapse."
+            await self.die(message, interaction, player_inventory, player_stats, embeds)
+            await interaction.response.send_message(embeds=embeds, ephemeral=True)
             return
 
         elif location == Locations.MOUNTAIN_B4:
             await interaction.response.defer(ephemeral=True, thinking=True)
 
-            player_inventory = skale.get_player_inventory(interaction.user.id)
             is_sword_equipped = player_inventory.items[Items.COPPER_SWORD_EQUIPPED] > 0
-            player_stats = skale.get_player_stats(interaction.user.id)
             if is_sword_equipped:
                 attack_action = "swing your <Copper Sword> at"
                 attack_damage = player_stats["base_attack"] + 5
@@ -151,46 +161,51 @@ class AttackCommand(commands.Cog, name="Attack Command"):
                 player_inventory.gold_balance += 3
                 player_inventory.items[Items.COPPER_ORE] += 1
             else:
-                message = "You collapse.\n`"
+                message = "You collapse."
 
                 copper_lost = min(player_inventory.items[Items.COPPER_ORE], 3)
                 if copper_lost > 0:
                     if copper_lost > 1:
-                        message += f"{copper_lost} "
-                    message += "<Copper Ore> dropped from inventory`"
+                        message += f"\n`{copper_lost} <Copper Ore> dropped from inventory`"
+                    else:
+                        message += "\n`<Copper Ore> dropped from inventory`"
                     player_inventory.items[Items.COPPER_ORE] -= copper_lost
 
                 if is_sword_equipped:
                     message += "\n`<Copper Sword> dropped.`"
                     player_inventory.items[Items.COPPER_SWORD_EQUIPPED] -= 1
 
-                amount_pilfered = int(player_inventory.gold_balance / 2)
-                message += (
-                    "\n\nYour body is discovered by a group of adventurers.\n"
-                    "They bring you to the doctor in Mara.\n"
-                    f"`{player_stats['max_hp']} HP healed`\n\n"
-                    "Doctor says, \"Quite a hit you took there. I'll take half your gold for healing you.\"\n"
-                    f"`{amount_pilfered}g pilfered from your Inventory.`\n\n"
-                    "Doctor says, \"Come again soon!\""
-                )
-                embeds.append(discord.Embed(description=message))
-                player_stats["current_hp"] = player_stats["max_hp"]
-                player_inventory.gold_balance -= amount_pilfered
-
-                go_cog: GoCommand = self.bot.get_cog("Go Command")
-                await go_cog.set_new_roles(interaction, Locations.Region.MOUNTAIN, Locations.Region.CITY)
-                await go_cog.set_channel_permissions(
-                    interaction,
-                    skale.get_previous_location(interaction.user.id),
-                    location,
-                    Locations.CITY_CLINIC
-                )
-                skale.set_player_location(interaction.user.id, Locations.CITY_CLINIC)
-
-                new_channel = interaction.guild.get_channel(Locations.location_channel_ids[Locations.CITY_CLINIC])
-                message = f"You find yourself {Locations.location_names[Locations.CITY_CLINIC]}:\n{new_channel.mention}"
-                embeds.append(discord.Embed(description=message))
+                await self.die(message, interaction, player_inventory, player_stats, embeds)
 
             skale.set_player_inventory(interaction.user.id, player_inventory)
             skale.set_player_stats(interaction.user.id, player_stats)
             await interaction.followup.send(embeds=embeds, ephemeral=True)
+
+
+    async def die(self, message: str, interaction: discord.Interaction, player_inventory: Inventory, player_stats: Dict[str, int], embeds: List[discord.Embed]):
+        amount_pilfered = int(player_inventory.gold_balance / 2)
+        message += (
+            "\n\nYour body is discovered by a group of adventurers.\n"
+            "They bring you to the doctor in Mara.\n"
+            f"`{player_stats['max_hp']} HP healed`\n\n"
+            "Doctor says, \"Quite a hit you took there. I'll take half your gold for healing you.\"\n"
+            f"`{amount_pilfered}g pilfered from your Inventory.`\n\n"
+            "Doctor says, \"Come again soon!\""
+        )
+        embeds.append(discord.Embed(description=message))
+        player_stats["current_hp"] = player_stats["max_hp"]
+        player_inventory.gold_balance -= amount_pilfered
+
+        go_cog: GoCommand = self.bot.get_cog("Go Command")
+        await go_cog.set_new_roles(interaction, Locations.Region.MOUNTAIN, Locations.Region.CITY)
+        await go_cog.set_channel_permissions(
+            interaction,
+            skale.get_previous_location(interaction.user.id),
+            skale.get_player_location(interaction.user.id),
+            Locations.CITY_CLINIC
+        )
+        skale.set_player_location(interaction.user.id, Locations.CITY_CLINIC)
+
+        new_channel = interaction.guild.get_channel(Locations.location_channel_ids[Locations.CITY_CLINIC])
+        message = f"You find yourself {Locations.location_names[Locations.CITY_CLINIC]}:\n{new_channel.mention}"
+        embeds.append(discord.Embed(description=message))
