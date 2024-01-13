@@ -29,6 +29,7 @@ class MerfolkAndMagicBot(commands.Bot):
 
         self.initial_extensions = [
             "cogs.commands_admin",
+            "cogs.command_attack",
             "cogs.command_buy",
             "cogs.commands_equip",
             "cogs.command_forge",
