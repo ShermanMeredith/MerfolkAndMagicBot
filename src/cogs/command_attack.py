@@ -10,6 +10,7 @@ from utils.accounts import user_accounts
 import utils.database as database
 import utils.skale as skale
 from data.locations import Locations
+from cogs.command_go import GoCommand
 
 # Config Variables
 DESCRIPTION = "Attack an enemy"
@@ -107,44 +108,43 @@ class AttackCommand(commands.Cog, name="Attack Command"):
 
             player_inventory = skale.get_player_inventory(interaction.user.id)
             is_sword_equipped = player_inventory.items[Items.COPPER_SWORD_EQUIPPED] > 0
+            player_stats = skale.get_player_stats(interaction.user.id)
             if is_sword_equipped:
                 attack_action = "swing your <Copper Sword> at"
-                attack_damage = (5, 7)
+                attack_damage = player_stats["base_attack"] + 5
             else:
                 attack_action = "punch"
-                attack_damage = (1, 3)
+                attack_damage = player_stats["base_attack"]
 
             skeleton_hp = 10
-            player_hp = 20
 
             message += (
                 "\nYou begin an attack against <Skeleton>\n\n"
                 "`Skeleton LVL 1: 10/10 HP | 2 ATK | 1 DEF | 8 SPD`\n"
-                f"`You: {player_hp}/20 HP | {attack_damage[0]} ATK | 1 DEF | 13 SPD`\n\n"
+                f"`You: {player_stats['current_hp']}/{player_stats['max_hp']} HP | {attack_damage} ATK | {player_stats['base_defense']} DEF | {player_stats['base_speed']} SPD`\n\n"
                 "You attack first!"
             )
             embeds = [discord.Embed(description=message)]
             round = 1
-            while skeleton_hp > 0 and player_hp > 0:
+            while skeleton_hp > 0 and player_stats["current_hp"] > 0:
                 message = f"You {attack_action} <Skeleton>.\n"
 
-                damage = random.randint(attack_damage[0], attack_damage[1])
+                damage = random.randint(attack_damage, attack_damage + 2)
                 skeleton_hp -= damage
                 message = f"You {attack_action} <Skeleton>.\n`<Skeleton> loses {damage} HP`\n\n"
 
                 damage = random.randint(1,3)
-                player_hp -= damage
+                player_stats["current_hp"] -= damage
                 message += f"<Skeleton> punches you.\n`You lose {damage} HP`"
 
                 embeds.append(discord.Embed(title=f"Round {round}", description=message))
                 round += 1
 
-            if player_hp > 0:
+            if player_stats["current_hp"] > 0:
                 message = (
                     "<Skeleton> dies.\n"
-                    "<Skeleton> drops 3g.\n"
+                    "<Skeleton> drops 3g and 1 <Copper Ore>.\n"
                     f"`3g added to inventory.`\n"
-                    "<Skeleton> drops 1 <Copper Ore>.\n"
                     f"`1 <Copper Ore> added to inventory.`"
                 )
                 embeds.append(discord.Embed(description=message))
@@ -159,21 +159,38 @@ class AttackCommand(commands.Cog, name="Attack Command"):
                         message += f"{copper_lost} "
                     message += "<Copper Ore> dropped from inventory`"
                     player_inventory.items[Items.COPPER_ORE] -= copper_lost
-                
+
                 if is_sword_equipped:
                     message += "\n`<Copper Sword> dropped.`"
                     player_inventory.items[Items.COPPER_SWORD_EQUIPPED] -= 1
-                embeds.append(discord.Embed(description=message))
 
                 amount_pilfered = int(player_inventory.gold_balance / 2)
-                message = (
-                    "Your body is discovered by a group of adventurers. They bring you to the doctor in Mara."
-                    "Doctor says, \"Quite a hit you took there. I'll take half your gold for healing you.\""
-                    f"`{amount_pilfered}g pilfered from your Inventory.`"
+                message += (
+                    "\n\nYour body is discovered by a group of adventurers.\n"
+                    "They bring you to the doctor in Mara.\n"
+                    f"`{player_stats['max_hp']} HP healed`\n\n"
+                    "Doctor says, \"Quite a hit you took there. I'll take half your gold for healing you.\"\n"
+                    f"`{amount_pilfered}g pilfered from your Inventory.`\n\n"
                     "Doctor says, \"Come again soon!\""
                 )
                 embeds.append(discord.Embed(description=message))
+                player_stats["current_hp"] = player_stats["max_hp"]
                 player_inventory.gold_balance -= amount_pilfered
 
+                go_cog: GoCommand = self.bot.get_cog("Go Command")
+                await go_cog.set_new_roles(interaction, Locations.Region.MOUNTAIN, Locations.Region.CITY)
+                await go_cog.set_channel_permissions(
+                    interaction,
+                    skale.get_previous_location(interaction.user.id),
+                    location,
+                    Locations.CITY_CLINIC
+                )
+                skale.set_player_location(interaction.user.id, Locations.CITY_CLINIC)
+
+                new_channel = interaction.guild.get_channel(Locations.location_channel_ids[Locations.CITY_CLINIC])
+                message = f"You find yourself {Locations.location_names[Locations.CITY_CLINIC]}:\n{new_channel.mention}"
+                embeds.append(discord.Embed(description=message))
+
             skale.set_player_inventory(interaction.user.id, player_inventory)
+            skale.set_player_stats(interaction.user.id, player_stats)
             await interaction.followup.send(embeds=embeds, ephemeral=True)

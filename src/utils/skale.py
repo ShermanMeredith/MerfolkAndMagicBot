@@ -10,13 +10,14 @@ from web3.contract.contract import Contract
 
 import data.abis as abis
 from data.locations import Locations
-from utils.accounts import user_accounts
 
 
 @dataclass
 class Inventory:
     gold_balance: int
     items: DefaultDict[int, int]
+
+STARTING_STATS = {"current_hp": 20, "max_hp": 20, "base_attack": 1, "base_defense": 1, "base_speed": 13}
 
 
 #==================================================================================================
@@ -41,15 +42,13 @@ class Skale:
 
 # TODO: replace with actual skale data
 PLAYER_LOCATIONS_FILEPATH = "src/data/player_locations.json"
+PLAYER_STATS_FILEPATH = "src/data/player_stats.json"
 PLAYER_INVENTORIES_FILEPATH = "src/data/player_inventories.pkl"
 
 #----------------------------------------------------------------------------------------------
 # GET PLAYER LOCATION
 #----------------------------------------------------------------------------------------------
 def get_player_location(member_id: int) -> Optional[int]:
-    if member_id not in user_accounts:
-        return None
-
     player_locations: Dict[str, str] = {}
     with open(PLAYER_LOCATIONS_FILEPATH) as f:
         try:
@@ -70,9 +69,6 @@ def get_player_location(member_id: int) -> Optional[int]:
 # GET PREVIOUS LOCATION
 #----------------------------------------------------------------------------------------------
 def get_previous_location(member_id: int) -> Optional[int]:
-    if member_id not in user_accounts:
-        return None
-
     player_locations: Dict[str, str] = {}
     with open(PLAYER_LOCATIONS_FILEPATH) as f:
         try:
@@ -117,16 +113,15 @@ def set_player_location(member_id: int, location_id: int):
 def get_player_inventory(member_id: int) -> Inventory:
     player_inventory = Inventory(0, defaultdict(int))
 
-    if member_id in user_accounts:
-        with open(PLAYER_INVENTORIES_FILEPATH, "rb") as f:
-            try:
-                player_inventories = pickle.load(f)
-                if str(member_id) in player_inventories and player_inventories[str(member_id)]:
-                    player_inventory = player_inventories[str(member_id)]
-                else:
-                    set_player_inventory(member_id, player_inventory)
-            except:
+    with open(PLAYER_INVENTORIES_FILEPATH, "rb") as f:
+        try:
+            player_inventories = pickle.load(f)
+            if str(member_id) in player_inventories and player_inventories[str(member_id)]:
+                player_inventory = player_inventories[str(member_id)]
+            else:
                 set_player_inventory(member_id, player_inventory)
+        except:
+            set_player_inventory(member_id, player_inventory)
 
     return player_inventory
 
@@ -146,7 +141,44 @@ def set_player_inventory(member_id: int, inventory: Inventory):
     with open(PLAYER_INVENTORIES_FILEPATH, 'wb') as f:
         f.write(pickle.dumps(player_inventories))
 
-#-------
-        
+#--------------------------------------------------------------------------------------------------
+# GET SHOP ITEMS
+#--------------------------------------------------------------------------------------------------
 def get_shop_items(location_id: int) -> Optional[List[Dict[str, Any]]]:
     return Locations.shop_items.get(location_id, None)
+
+#--------------------------------------------------------------------------------------------------
+# GET PLAYER STATS
+#--------------------------------------------------------------------------------------------------
+def get_player_stats(member_id: int) -> Dict[str, int]:
+    player_stats: Dict[str, int] = {}
+    with open(PLAYER_STATS_FILEPATH) as f:
+        try:
+            all_player_stats = json.load(f)
+            if str(member_id) in all_player_stats:
+                player_stats = all_player_stats[str(member_id)]
+            else:
+                player_stats = STARTING_STATS
+                set_player_stats(member_id, player_stats)
+
+        except:
+            player_stats = STARTING_STATS
+
+    return player_stats
+
+
+#--------------------------------------------------------------------------------------------------
+# SET PLAYER STATS
+#--------------------------------------------------------------------------------------------------
+def set_player_stats(member_id: int, player_stats: Dict[str, int]):
+    all_player_stats: Dict[str, Dict[str, int]] = {}
+    with open(PLAYER_STATS_FILEPATH) as f:
+        try:
+            all_player_stats = json.load(f)
+        except:
+            pass
+
+    all_player_stats[str(member_id)] = player_stats
+
+    with open(PLAYER_STATS_FILEPATH, 'w') as f:
+        json.dump(all_player_stats, f)
