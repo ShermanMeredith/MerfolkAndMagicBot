@@ -126,6 +126,8 @@ class Locations:
         BEACH: "You can't see anything, <@267801271887593478> didn't write it yet."
     }
 
+    location_has_copper = {MOUNTAIN_B2: True, MOUNTAIN_B4: True}
+
     shop_items: Dict[int, List[Dict[str, Any]]] = {
         CITY_ALCHEMIST: [],
         CITY_BLACKSMITH: [

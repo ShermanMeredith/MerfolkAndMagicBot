@@ -10,7 +10,7 @@ import utils.database as database
 import utils.skale as skale
 
 # Config Variables
-DESCRIPTION = "Purchase an item"
+DESCRIPTION = "Check your gold and items"
 LOGIN_FIRST = f"""Looks like you aren't logged in right now...
 Go to <#{database.get_login_channel_id(int(environ.get("GUILD_ID")))}> to sign up or log in, then try again"""
 
