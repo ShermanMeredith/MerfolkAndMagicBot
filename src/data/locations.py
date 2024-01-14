@@ -133,6 +133,7 @@ class Locations:
         CITY_BLACKSMITH: [
             {
                 "id": Items.COPPER_SWORD_UNEQUIPPED,
+                "price": 100,
                 "ingredients": {
                     Items.COPPER_ORE: 1
                 }
@@ -141,11 +142,16 @@ class Locations:
     }
 
     shop_items: Dict[int, List[Dict[str, Any]]] = {
-        CITY_ALCHEMIST: [],
+        CITY_ALCHEMIST: [
+            {"id": Items.MINOR_POTION, "price": 10, "healing": 10},
+            {"id": Items.LIGHT_POTION, "price": 25, "healing": 30},
+            {"id": Items.STANDARD_POTION, "price": 50, "healing": 75},
+            {"id": Items.GREATER_POTION, "price": 100, "healing": 200},
+            {"id": Items.SUPER_POTION, "price": 200, "healing": 500}
+        ],
         CITY_BLACKSMITH: [
             {"id": Items.COPPER_SWORD_UNEQUIPPED, "price": 1000},
-            {"id": Items.COPPER_ORE, "price": 900},
-            {"id": Items.HUNDRED_GOLD, "price": -100}
+            {"id": Items.COPPER_ORE, "price": 900}
         ],
         CITY_CLINIC: [],
         CITY_MAGE_TOWER: [],

@@ -4,7 +4,7 @@ from typing import List, Dict, Any
 import discord
 from discord.ext import commands
 
-from data.items import Items
+from data.items import Items, ItemType
 from utils.accounts import user_accounts
 import utils.database as database
 import utils.skale as skale
@@ -85,6 +85,8 @@ class ShopItemButton(discord.ui.Button):
         self.item_name = Items.item_names[self.item_id]
 
         button_label = f"<{self.item_name}> — {self.price}g"
+        if Items.get_item_type(self.item_id) == ItemType.CONSUMABLES:
+            button_label += f"\n(Heals {shop_item['healing']}hp)"
 
         super().__init__(
             style=discord.ButtonStyle.blurple,
